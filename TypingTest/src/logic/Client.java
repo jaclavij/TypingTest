@@ -9,14 +9,15 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
-public class Client {
+public class Client{
 
 	public static void main(String[] args) {
 		try (Socket socket = new Socket("", 8080);
 				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				Writer w = new OutputStreamWriter(socket.getOutputStream());
-				Scanner sc = new Scanner(System.in)){
+				Scanner sc = new Scanner(System.in)) {
 			String linea;
+			System.out.println(sc.delimiter());
 			while (true) {
 				if ((linea = br.readLine()).startsWith("Correcto!") || linea.startsWith("Fallaste!")) {
 					System.out.println(linea);
@@ -27,12 +28,13 @@ public class Client {
 				w.write(written + "\r\n");
 				w.flush();
 			}
+
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }

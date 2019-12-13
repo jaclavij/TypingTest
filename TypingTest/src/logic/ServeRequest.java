@@ -13,6 +13,7 @@ public class ServeRequest implements Runnable {
 
 	private Socket client;
 	private List<String> engList;
+	boolean gameActive = true;
 
 	public ServeRequest(Socket client, List<String> engList) {
 		this.client = client;
@@ -28,7 +29,7 @@ public class ServeRequest implements Runnable {
 				String word = engList.get(ran.nextInt(engList.size()));
 				w.write(word + "\r\n");
 				w.flush();
-				if (br.readLine().equals(word)) {
+				if (br.readLine().equals(word) && gameActive) {
 					score++;
 					w.write("Correcto! Score: " + score + "\r\n");
 				} else {
