@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import gui.Language;
+
 public class Words {
 	
 	private static List<String> engList;
@@ -73,8 +75,8 @@ public class Words {
 		espList = newEspList;
 	}
 	
-	public static String getRandom(String lang) {
-		if (lang.equals("ESP"))
+	public static String getRandom(Language lang) {
+		if (lang == Language.ESP)
 			return espList.get(ran.nextInt(espList.size()));
 		else
 			return engList.get(ran.nextInt(engList.size()));
