@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
@@ -33,16 +35,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import data.Words;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 public class GamePanel extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private Difficulty difficulty;
 	private Language language;
-	private int seconds;
+	private double seconds;
 	private boolean isRunning = false;
 	private int score = 0;
-	private int highScore = 0;
+	private int[] highScores = new int[] {0,0,0,0};
 
 	private JPanel contentPane;
 	private JLabel lblWord;
@@ -53,6 +57,7 @@ public class GamePanel extends JFrame {
 	private JTextField txtInput;
 	private JLabel lblScore;
 	private JLabel lblHighScore;
+	private JLabel lblTypePlayTo;
 	private JTabbedPane tabbedPane;
 	private JPanel panelOptions;
 	private JPanel panelLanguage;
@@ -63,6 +68,8 @@ public class GamePanel extends JFrame {
 	private JRadioButton radioButton_3;
 	private JRadioButton radioButton_4;
 	private JRadioButton radioButton_5;
+	private JPanel panelCompete;
+	private JTable table;
 
 	/**
 	 * Launch the application.
@@ -71,7 +78,7 @@ public class GamePanel extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GamePanel frame = new GamePanel(Difficulty.HARD, Language.ENG);
+					GamePanel frame = new GamePanel(Difficulty.HARD, Language.ESP);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -97,7 +104,7 @@ public class GamePanel extends JFrame {
 			seconds = 3;
 			break;
 		case GOD:
-			seconds = 1;
+			seconds = 1.5;
 			break;
 		default:
 			break;
@@ -135,7 +142,7 @@ public class GamePanel extends JFrame {
 		});
 		panelGame.add(lblWord);
 
-		timer = new Timer(seconds * 10, new ActionListener() {
+		timer = new Timer((int) seconds * 10, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				barProgressHandler();
 			}
@@ -194,6 +201,12 @@ public class GamePanel extends JFrame {
 		});
 		panelGame.add(lblHighScore);
 
+		lblTypePlayTo = new JLabel("Type play to restart");
+		lblTypePlayTo.setFont(new Font("Quicksand Medium", Font.PLAIN, 12));
+		lblTypePlayTo.setBounds(170, 196, 113, 15);
+		lblTypePlayTo.setVisible(false);
+		panelGame.add(lblTypePlayTo);
+
 		panelOptions = new JPanel();
 		tabbedPane.addTab("Options", null, panelOptions, null);
 		panelOptions.setLayout(null);
@@ -229,7 +242,7 @@ public class GamePanel extends JFrame {
 			AbstractButton button = buttons.nextElement();
 			button.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
-					buttonSelectionHandler(e);
+					difButtonSelectionHandler(e);
 				}
 			});
 			if (button.getText().equalsIgnoreCase(difficulty.toString())) {
@@ -252,9 +265,29 @@ public class GamePanel extends JFrame {
 		radioButton_5.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
 		panelLanguage.add(radioButton_5);
 		langGroup.add(radioButton_5);
+		
+		panelCompete = new JPanel();
+		tabbedPane.addTab("Compete", null, panelCompete, null);
+		panelCompete.setLayout(null);
+		
+		table = new JTable();
+		table.setModel(new DefaultTableModel(
+			new Object[][] {
+			},
+			new String[] {
+				"New column", "New column"
+			}
+		));
+		table.setBounds(132, 25, 171, 252);
+		panelCompete.add(table);
 
 		for (Enumeration<AbstractButton> buttons = langGroup.getElements(); buttons.hasMoreElements();) {
 			AbstractButton button = buttons.nextElement();
+			button.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					langButtonSelectionHandler(e);
+				}
+			});
 			if (button.getText().equalsIgnoreCase(language.toString())) {
 				button.setSelected(true);
 			}
@@ -262,9 +295,17 @@ public class GamePanel extends JFrame {
 
 		pack();
 		setLocationRelativeTo(null);
+		addWindowListener(new WindowAdapter() {
+			public void windowOpened(WindowEvent e) {
+				txtInput.requestFocus();
+			}
+		});
 	}
 
 	public void barProgressHandler() {
+		float[] hsbvals = new float[3];
+		Color.RGBtoHSB((int) ((100 - progressBar.getValue()) * 2.55), 0, 0, hsbvals);
+		progressBar.setForeground(Color.getHSBColor(hsbvals[0], hsbvals[1], hsbvals[2]));
 		progressBar.setValue(progressBar.getValue() - 1);
 	}
 
@@ -273,10 +314,12 @@ public class GamePanel extends JFrame {
 			timer.stop();
 			isRunning = false;
 			lblWord.setText("Time's up");
-			if (score > highScore) {
-				highScore = score;
-				lblHighScore.setText("High Score: " + highScore);
+			lblTypePlayTo.setVisible(true);
+			if (score > highScores[difficulty.ordinal()]) {
+				highScores[difficulty.ordinal()] = score;
+				lblHighScore.setText("High Score: " + highScores[difficulty.ordinal()]);
 			}
+			System.out.println(highScores[0] + " " + highScores[1] + " " + highScores[2] + " " + highScores[3]);
 		}
 	}
 
@@ -293,6 +336,7 @@ public class GamePanel extends JFrame {
 					progressBar.setValue(100);
 					score = 0;
 					lblScore.setText("Score: " + score);
+					lblTypePlayTo.setVisible(false);
 					txtInput.setText("");
 					lblWord.setText(Words.getRandom(language));
 					timer.restart();
@@ -309,23 +353,21 @@ public class GamePanel extends JFrame {
 		};
 		SwingUtilities.invokeLater(doUpdate);
 	}
-	
+
 	public void lblWordChangeHandler() {
 		lblWord.setSize(lblWord.getPreferredSize());
 		lblWord.setLocation((panelGame.getWidth() - lblWord.getWidth()) / 2,
 				progressBar.getLocation().y + (progressBar.getHeight() - lblWord.getHeight()) / 2);
 	}
-	
+
 	public void scoresChangeHandler(PropertyChangeEvent evt) {
 		JLabel lbl = (JLabel) evt.getSource();
 		lbl.setSize(lbl.getPreferredSize());
 	}
-	
-	public void buttonSelectionHandler(ItemEvent e) {
-		System.out.println(difficulty);
+
+	public void difButtonSelectionHandler(ItemEvent e) {
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			JRadioButton bt = (JRadioButton) e.getItem();
-			System.out.println(bt.getMnemonic());
 			switch (bt.getText()) {
 			case "Easy":
 				difficulty = Difficulty.EASY;
@@ -341,12 +383,32 @@ public class GamePanel extends JFrame {
 				break;
 			case "GOD":
 				difficulty = Difficulty.GOD;
-				seconds = 1;
+				seconds = 1.5;
 				break;
 			default:
 				break;
 			}
-			timer.setDelay(seconds * 10);
+			timer.setDelay((int) seconds * 10);
+		}
+	}
+
+	public void langButtonSelectionHandler(ItemEvent e) {
+		if (e.getStateChange() == ItemEvent.SELECTED) {
+			JRadioButton bt = (JRadioButton) e.getItem();
+			switch (bt.getText()) {
+			case "English":
+				language = Language.ENG;
+				if (lblWord.getText().equals("jugar"))
+					lblWord.setText("play");
+				break;
+			case "Spanish":
+				language = Language.ESP;
+				if (lblWord.getText().equals("play"))
+					lblWord.setText("jugar");
+				break;
+			default:
+				break;
+			}
 		}
 	}
 }
