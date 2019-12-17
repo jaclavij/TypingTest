@@ -6,14 +6,15 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import data.Words;
+import data.HighScore;
 
 public class Server {
 
 	public static void main(String[] args) {
 
-		// Preparacion de las listas de palabras
-		Words.load();
+		HighScore.load(); //Cargo las tablas de highscores desde los archivos txt;
+		HighScore.count();
+//		HighScore.getTableEasy().put("Jaime", 5);
 		// Ejecución del servidor multihilo
 		ExecutorService pool = Executors.newCachedThreadPool();
 		ServerSocket ss = null;
@@ -28,15 +29,17 @@ public class Server {
 					Socket client = ss.accept();
 					System.out.println("Serving client " + i);
 					i++;
-					pool.execute(new ServeRequest(client, Words.getEngList()));
+					pool.execute(new ServeRequest(client));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				HighScore.save();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
+				HighScore.save();
 				if (ss != null)
 					ss.close();
 			} catch (IOException e) {

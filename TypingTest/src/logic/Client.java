@@ -11,6 +11,8 @@ import java.util.Scanner;
 
 public class Client{
 
+	private static Socket socket;
+	
 	public static void main(String[] args) {
 		try (Socket socket = new Socket("", 8080);
 				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));

@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -33,10 +34,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 
 import data.Words;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.border.TitledBorder;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.JButton;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 public class GamePanel extends JFrame {
 
@@ -46,7 +54,7 @@ public class GamePanel extends JFrame {
 	private double seconds;
 	private boolean isRunning = false;
 	private int score = 0;
-	private int[] highScores = new int[] {0,0,0,0};
+	private int[] highScores = new int[] { 0, 0, 0, 0 };
 
 	private JPanel contentPane;
 	private JLabel lblWord;
@@ -68,8 +76,18 @@ public class GamePanel extends JFrame {
 	private JRadioButton radioButton_3;
 	private JRadioButton radioButton_4;
 	private JRadioButton radioButton_5;
-	private JPanel panelCompete;
+	private JPanel panelTop;
 	private JTable table;
+	private JPanel panelSubmit;
+	private JLabel lblEasyScore;
+	private JLabel lblMediumScore;
+	private JLabel lblHardScore;
+	private JLabel lblGodScore;
+	private JButton btnSubmit;
+	private JSeparator separator_1;
+	private JLabel lblUsername;
+	private JTextField txtUsername;
+	private JLabel lblYouCanSubmit;
 
 	/**
 	 * Launch the application.
@@ -112,6 +130,8 @@ public class GamePanel extends JFrame {
 		language = lang;
 		Words.load();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setTitle("TypingTest");
+		;
 		setLocationRelativeTo(null);
 		setBounds(100, 100, 465, 559);
 		contentPane = new JPanel();
@@ -265,21 +285,141 @@ public class GamePanel extends JFrame {
 		radioButton_5.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
 		panelLanguage.add(radioButton_5);
 		langGroup.add(radioButton_5);
+
+		panelTop = new JPanel();
+		tabbedPane.addTab("Top Scores", null, panelTop, null);
+		panelTop.setLayout(null);
+
+		panelSubmit = new JPanel();
+		panelSubmit.setBorder(
+				new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Your Top Scores", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelSubmit.setBounds(10, 11, 433, 100);
+		GridBagLayout gbl_panelSubmit = new GridBagLayout();
+		gbl_panelSubmit.columnWidths = new int[] { 105, 105, 105, 105, 0 };
+		gbl_panelSubmit.rowHeights = new int[] { 32, 0, 32, 0, 0, 0 };
+		gbl_panelSubmit.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE };
+		gbl_panelSubmit.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
+		panelSubmit.setLayout(gbl_panelSubmit);
+		panelTop.add(panelSubmit);
+
+		JLabel lblEasy = new JLabel("Easy");
+		lblEasy.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblEasy = new GridBagConstraints();
+		gbc_lblEasy.fill = GridBagConstraints.VERTICAL;
+		gbc_lblEasy.insets = new Insets(0, 0, 5, 5);
+		gbc_lblEasy.gridx = 0;
+		gbc_lblEasy.gridy = 0;
+		panelSubmit.add(lblEasy, gbc_lblEasy);
+
+		JLabel lblMedium = new JLabel("Medium");
+		lblMedium.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblMedium = new GridBagConstraints();
+		gbc_lblMedium.fill = GridBagConstraints.VERTICAL;
+		gbc_lblMedium.insets = new Insets(0, 0, 5, 5);
+		gbc_lblMedium.gridx = 1;
+		gbc_lblMedium.gridy = 0;
+		panelSubmit.add(lblMedium, gbc_lblMedium);
+
+		JLabel lblHard = new JLabel("Hard");
+		lblHard.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblHard = new GridBagConstraints();
+		gbc_lblHard.fill = GridBagConstraints.VERTICAL;
+		gbc_lblHard.insets = new Insets(0, 0, 5, 5);
+		gbc_lblHard.gridx = 2;
+		gbc_lblHard.gridy = 0;
+		panelSubmit.add(lblHard, gbc_lblHard);
+
+		JLabel lblGod = new JLabel("GOD");
+		lblGod.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblGod = new GridBagConstraints();
+		gbc_lblGod.fill = GridBagConstraints.VERTICAL;
+		gbc_lblGod.insets = new Insets(0, 0, 5, 0);
+		gbc_lblGod.gridx = 3;
+		gbc_lblGod.gridy = 0;
+		panelSubmit.add(lblGod, gbc_lblGod);
 		
-		panelCompete = new JPanel();
-		tabbedPane.addTab("Compete", null, panelCompete, null);
-		panelCompete.setLayout(null);
+		separator_1 = new JSeparator();
+		separator_1.setForeground(Color.DARK_GRAY);
+		separator_1.setBackground(Color.DARK_GRAY);
+		GridBagConstraints gbc_separator_1 = new GridBagConstraints();
+		gbc_separator_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_separator_1.gridwidth = 4;
+		gbc_separator_1.insets = new Insets(0, 0, 5, 0);
+		gbc_separator_1.gridx = 0;
+		gbc_separator_1.gridy = 1;
+		panelSubmit.add(separator_1, gbc_separator_1);
+
+		lblEasyScore = new JLabel(String.valueOf(highScores[0]));
+		lblEasyScore.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblEasyScore = new GridBagConstraints();
+		gbc_lblEasyScore.insets = new Insets(0, 0, 5, 5);
+		gbc_lblEasyScore.gridx = 0;
+		gbc_lblEasyScore.gridy = 2;
+		panelSubmit.add(lblEasyScore, gbc_lblEasyScore);
+
+		lblMediumScore = new JLabel(String.valueOf(highScores[1]));
+		lblMediumScore.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblMediumScore = new GridBagConstraints();
+		gbc_lblMediumScore.insets = new Insets(0, 0, 5, 5);
+		gbc_lblMediumScore.gridx = 1;
+		gbc_lblMediumScore.gridy = 2;
+		panelSubmit.add(lblMediumScore, gbc_lblMediumScore);
+
+		lblHardScore = new JLabel(String.valueOf(highScores[2]));
+		lblHardScore.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblHardScore = new GridBagConstraints();
+		gbc_lblHardScore.insets = new Insets(0, 0, 5, 5);
+		gbc_lblHardScore.gridx = 2;
+		gbc_lblHardScore.gridy = 2;
+		panelSubmit.add(lblHardScore, gbc_lblHardScore);
+
+		lblGodScore = new JLabel(String.valueOf(highScores[3]));
+		lblGodScore.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		GridBagConstraints gbc_lblGodScore = new GridBagConstraints();
+		gbc_lblGodScore.insets = new Insets(0, 0, 5, 0);
+		gbc_lblGodScore.gridx = 3;
+		gbc_lblGodScore.gridy = 2;
+		panelSubmit.add(lblGodScore, gbc_lblGodScore);
 		
+		JSeparator separator = new JSeparator();
+		separator.setBackground(Color.DARK_GRAY);
+		separator.setForeground(Color.DARK_GRAY);
+		GridBagConstraints gbc_separator = new GridBagConstraints();
+		gbc_separator.fill = GridBagConstraints.HORIZONTAL;
+		gbc_separator.gridwidth = 4;
+		gbc_separator.insets = new Insets(0, 0, 5, 0);
+		gbc_separator.gridx = 0;
+		gbc_separator.gridy = 3;
+		panelSubmit.add(separator, gbc_separator);
+
 		table = new JTable();
-		table.setModel(new DefaultTableModel(
-			new Object[][] {
-			},
-			new String[] {
-				"New column", "New column"
-			}
-		));
-		table.setBounds(132, 25, 171, 252);
-		panelCompete.add(table);
+		table.setBounds(0, 206, 453, 247);
+		panelTop.add(table);
+		table.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "New column", "New column" }));
+		
+		lblUsername = new JLabel("Username");
+		lblUsername.setBounds(20, 154, 89, 23);
+		panelTop.add(lblUsername);
+		lblUsername.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		
+		txtUsername = new JTextField();
+		txtUsername.setBounds(119, 149, 196, 32);
+		panelTop.add(txtUsername);
+		txtUsername.setColumns(10);
+		
+				btnSubmit = new JButton("Submit");
+				btnSubmit.setBounds(325, 152, 89, 25);
+				panelTop.add(btnSubmit);
+				btnSubmit.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						
+					}
+				});
+				btnSubmit.setFont(new Font("Tahoma", Font.PLAIN, 13));
+				
+				lblYouCanSubmit = new JLabel("You can send your scores by typing a username and clicking Submit!");
+				lblYouCanSubmit.setBounds(20, 124, 423, 14);
+				panelTop.add(lblYouCanSubmit);
 
 		for (Enumeration<AbstractButton> buttons = langGroup.getElements(); buttons.hasMoreElements();) {
 			AbstractButton button = buttons.nextElement();
@@ -309,8 +449,11 @@ public class GamePanel extends JFrame {
 		progressBar.setValue(progressBar.getValue() - 1);
 	}
 
+	// En esto evento realizo todas las sentencias necesarias cada vez que se
+	// termina una ronda
 	public void barStateHandler(ChangeEvent e) {
 		if (progressBar.getValue() <= 0) {
+
 			timer.stop();
 			isRunning = false;
 			lblWord.setText("Time's up");
@@ -318,6 +461,22 @@ public class GamePanel extends JFrame {
 			if (score > highScores[difficulty.ordinal()]) {
 				highScores[difficulty.ordinal()] = score;
 				lblHighScore.setText("High Score: " + highScores[difficulty.ordinal()]);
+				switch (difficulty) {
+				case EASY:
+					lblEasyScore.setText(String.valueOf(highScores[0]));
+					break;
+				case MEDIUM:
+					lblMediumScore.setText(String.valueOf(highScores[1]));
+					break;
+				case HARD:
+					lblHardScore.setText(String.valueOf(highScores[2]));
+					break;
+				case GOD:
+					lblGodScore.setText(String.valueOf(highScores[3]));
+					break;
+				default:
+					break;
+				}
 			}
 			System.out.println(highScores[0] + " " + highScores[1] + " " + highScores[2] + " " + highScores[3]);
 		}
@@ -366,6 +525,8 @@ public class GamePanel extends JFrame {
 	}
 
 	public void difButtonSelectionHandler(ItemEvent e) {
+		if (isRunning)
+			progressBar.setValue(0);
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			JRadioButton bt = (JRadioButton) e.getItem();
 			switch (bt.getText()) {
@@ -389,6 +550,7 @@ public class GamePanel extends JFrame {
 				break;
 			}
 			timer.setDelay((int) seconds * 10);
+			lblHighScore.setText("High Score: " + highScores[difficulty.ordinal()]);
 		}
 	}
 
