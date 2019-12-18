@@ -4,7 +4,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -14,37 +17,35 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel;
 
 import data.Words;
-import javax.swing.border.TitledBorder;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.JButton;
-import javax.swing.border.EtchedBorder;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
+import logic.Client;
 
 public class GamePanel extends JFrame {
 
@@ -54,7 +55,7 @@ public class GamePanel extends JFrame {
 	private double seconds;
 	private boolean isRunning = false;
 	private int score = 0;
-	private int[] highScores = new int[] { 0, 0, 0, 0 };
+	private Integer[] highScores = new Integer[] { 0, 0, 0, 0 };
 
 	private JPanel contentPane;
 	private JLabel lblWord;
@@ -83,7 +84,7 @@ public class GamePanel extends JFrame {
 	private JLabel lblMediumScore;
 	private JLabel lblHardScore;
 	private JLabel lblGodScore;
-	private JButton btnSubmit;
+	private JButton btSubmit;
 	private JSeparator separator_1;
 	private JLabel lblUsername;
 	private JTextField txtUsername;
@@ -291,8 +292,9 @@ public class GamePanel extends JFrame {
 		panelTop.setLayout(null);
 
 		panelSubmit = new JPanel();
-		panelSubmit.setBorder(
-				new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Your Top Scores", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelSubmit.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Your Top Scores", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		panelSubmit.setBounds(10, 11, 433, 100);
 		GridBagLayout gbl_panelSubmit = new GridBagLayout();
 		gbl_panelSubmit.columnWidths = new int[] { 105, 105, 105, 105, 0 };
@@ -337,7 +339,7 @@ public class GamePanel extends JFrame {
 		gbc_lblGod.gridx = 3;
 		gbc_lblGod.gridy = 0;
 		panelSubmit.add(lblGod, gbc_lblGod);
-		
+
 		separator_1 = new JSeparator();
 		separator_1.setForeground(Color.DARK_GRAY);
 		separator_1.setBackground(Color.DARK_GRAY);
@@ -380,7 +382,7 @@ public class GamePanel extends JFrame {
 		gbc_lblGodScore.gridx = 3;
 		gbc_lblGodScore.gridy = 2;
 		panelSubmit.add(lblGodScore, gbc_lblGodScore);
-		
+
 		JSeparator separator = new JSeparator();
 		separator.setBackground(Color.DARK_GRAY);
 		separator.setForeground(Color.DARK_GRAY);
@@ -392,34 +394,49 @@ public class GamePanel extends JFrame {
 		gbc_separator.gridy = 3;
 		panelSubmit.add(separator, gbc_separator);
 
-		table = new JTable();
-		table.setBounds(0, 206, 453, 247);
-		panelTop.add(table);
-		table.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "New column", "New column" }));
+		ConcurrentSkipListMap<String, Integer> initialTable = getScoreTable(difficulty);
 		
+		ConcurrentSkipListMap<Integer, String> tableGod2 = new ConcurrentSkipListMap<>();
+		tableGod2.put(4, "Jaime");
+		tableGod2.put(10, "Ale");
+		tableGod2.put(1, "b");
+		String columnNames[] = { "Username", "Score" };
+		Object[][] data = new Object[tableGod2.size()][2];
+		int i = 0;
+		for (Entry<Integer, String> entry : tableGod2.descendingMap().entrySet()) {
+			data[i][0] = entry.getValue();
+			data[i][1] = entry.getKey();
+			i++;
+		}
+
+		table = new JTable(data, columnNames);
+		table.setBounds(119, 206, 334, 247);
+		panelTop.add(table);
+//		table.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "New column", "New column" }));
+
 		lblUsername = new JLabel("Username");
 		lblUsername.setBounds(20, 154, 89, 23);
 		panelTop.add(lblUsername);
 		lblUsername.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
-		
+
 		txtUsername = new JTextField();
 		txtUsername.setBounds(119, 149, 196, 32);
 		panelTop.add(txtUsername);
 		txtUsername.setColumns(10);
-		
-				btnSubmit = new JButton("Submit");
-				btnSubmit.setBounds(325, 152, 89, 25);
-				panelTop.add(btnSubmit);
-				btnSubmit.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						
-					}
-				});
-				btnSubmit.setFont(new Font("Tahoma", Font.PLAIN, 13));
-				
-				lblYouCanSubmit = new JLabel("You can send your scores by typing a username and clicking Submit!");
-				lblYouCanSubmit.setBounds(20, 124, 423, 14);
-				panelTop.add(lblYouCanSubmit);
+
+		btSubmit = new JButton("Submit");
+		btSubmit.setBounds(325, 152, 89, 25);
+		panelTop.add(btSubmit);
+		btSubmit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				submitButtonHandler();
+			}
+		});
+		btSubmit.setFont(new Font("Tahoma", Font.PLAIN, 13));
+
+		lblYouCanSubmit = new JLabel("You can send your scores by typing a username and clicking Submit!");
+		lblYouCanSubmit.setBounds(20, 124, 423, 14);
+		panelTop.add(lblYouCanSubmit);
 
 		for (Enumeration<AbstractButton> buttons = langGroup.getElements(); buttons.hasMoreElements();) {
 			AbstractButton button = buttons.nextElement();
@@ -572,5 +589,17 @@ public class GamePanel extends JFrame {
 				break;
 			}
 		}
+	}
+	
+	public void submitButtonHandler() {
+		if (Client.sendScores(txtUsername.getText(), highScores)) {
+			
+		} else {
+			
+		}
+	}
+	
+	public ConcurrentSkipListMap<String, Integer> getScoreTable(Difficulty dif){
+		return Client.getTable(dif.name());
 	}
 }

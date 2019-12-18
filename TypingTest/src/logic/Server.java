@@ -12,9 +12,15 @@ public class Server {
 
 	public static void main(String[] args) {
 
-		HighScore.load(); //Cargo las tablas de highscores desde los archivos txt;
+		HighScore.load(); // Cargo las tablas de highscores desde los archivos txt;
 		HighScore.count();
+//		HighScore.putGod2("Jaime", 1);
+//		HighScore.putGod2("L", 2);
+//		HighScore.putGod2("Z", 2);
+//		HighScore.putGod2("M", 7);
+//		HighScore.putGod2("A", 5);
 //		HighScore.getTableEasy().put("Jaime", 5);
+
 		// Ejecución del servidor multihilo
 		ExecutorService pool = Executors.newCachedThreadPool();
 		ServerSocket ss = null;
@@ -33,7 +39,6 @@ public class Server {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				HighScore.save();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -46,7 +51,5 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
-
 	}
-
 }
