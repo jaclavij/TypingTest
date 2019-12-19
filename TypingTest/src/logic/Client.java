@@ -9,7 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Client {
 
@@ -18,8 +18,8 @@ public class Client {
 	public static boolean sendScores(String usr, Integer[] values) {
 		boolean b = true;
 		try (Socket socket = new Socket("", 8080);
-				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				Writer w = new OutputStreamWriter(socket.getOutputStream());) {
+				Writer w = new OutputStreamWriter(socket.getOutputStream());
+				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
 			System.out.println("Sending username");
 			w.write("Username:" + usr + "\r\n");
 			w.flush();
@@ -30,6 +30,7 @@ public class Client {
 				oos.writeObject(values);
 				oos.flush();
 				oos.close();
+				br.close();
 			} else if (linea.equals("Unavailable")) {
 				System.out.println("Read unavailable");
 				b = false;
@@ -42,17 +43,27 @@ public class Client {
 		return b;
 	}
 
-	public static ConcurrentSkipListMap<String, Integer> getTable(String name) {
-		ConcurrentSkipListMap<String, Integer> table = null;
+	public static ConcurrentHashMap<String, Integer> getTable(String name) {
+		ConcurrentHashMap<String, Integer> table = null;
 		try (Socket socket = new Socket("", 8080);
-				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				Writer w = new OutputStreamWriter(socket.getOutputStream());) {
+				Writer w = new OutputStreamWriter(socket.getOutputStream());
+				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));) {
 			System.out.println("Sending difficulty");
-			w.write(name);
+			w.write(name + "\r\n");
 			w.flush();
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-			table = (ConcurrentSkipListMap<String, Integer>) ois.readObject();
-			ois.close();
+			String linea;
+			linea = br.readLine();
+			System.out.println(linea);
+			if (linea.equals("OK")) {
+				System.out.println("Read OK");
+				w.write("SEND" + "\r\n");
+				w.flush();
+				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+				table = (ConcurrentHashMap<String, Integer>) ois.readObject();
+				ois.close();
+			} else if (linea.equals("Unavailable")) {
+				System.out.println("Read unavailable");
+			}
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

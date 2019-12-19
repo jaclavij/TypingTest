@@ -16,23 +16,29 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
@@ -43,6 +49,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 import data.Words;
 import logic.Client;
@@ -89,6 +97,7 @@ public class GamePanel extends JFrame {
 	private JLabel lblUsername;
 	private JTextField txtUsername;
 	private JLabel lblYouCanSubmit;
+	private JComboBox<String> comboBox;
 
 	/**
 	 * Launch the application.
@@ -394,25 +403,12 @@ public class GamePanel extends JFrame {
 		gbc_separator.gridy = 3;
 		panelSubmit.add(separator, gbc_separator);
 
-		ConcurrentSkipListMap<String, Integer> initialTable = getScoreTable(difficulty);
-		
-		ConcurrentSkipListMap<Integer, String> tableGod2 = new ConcurrentSkipListMap<>();
-		tableGod2.put(4, "Jaime");
-		tableGod2.put(10, "Ale");
-		tableGod2.put(1, "b");
-		String columnNames[] = { "Username", "Score" };
-		Object[][] data = new Object[tableGod2.size()][2];
-		int i = 0;
-		for (Entry<Integer, String> entry : tableGod2.descendingMap().entrySet()) {
-			data[i][0] = entry.getValue();
-			data[i][1] = entry.getKey();
-			i++;
-		}
+		scoreTableSetup(difficulty);
 
-		table = new JTable(data, columnNames);
-		table.setBounds(119, 206, 334, 247);
-		panelTop.add(table);
-//		table.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "New column", "New column" }));
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(183, 211, 260, 231);
+		panelTop.add(scrollPane);
+		scrollPane.setViewportView(table);
 
 		lblUsername = new JLabel("Username");
 		lblUsername.setBounds(20, 154, 89, 23);
@@ -420,12 +416,13 @@ public class GamePanel extends JFrame {
 		lblUsername.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
 
 		txtUsername = new JTextField();
+		txtUsername.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtUsername.setBounds(119, 149, 196, 32);
 		panelTop.add(txtUsername);
 		txtUsername.setColumns(10);
 
 		btSubmit = new JButton("Submit");
-		btSubmit.setBounds(325, 152, 89, 25);
+		btSubmit.setBounds(325, 153, 89, 25);
 		panelTop.add(btSubmit);
 		btSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -437,6 +434,25 @@ public class GamePanel extends JFrame {
 		lblYouCanSubmit = new JLabel("You can send your scores by typing a username and clicking Submit!");
 		lblYouCanSubmit.setBounds(20, 124, 423, 14);
 		panelTop.add(lblYouCanSubmit);
+
+		comboBox = new JComboBox<>();
+		comboBox.setBounds(20, 242, 131, 22);
+		comboBox.addItem("Easy");
+		comboBox.addItem("Medium");
+		comboBox.addItem("Hard");
+		comboBox.addItem("GOD");
+		comboBox.setSelectedIndex(difficulty.ordinal());
+		comboBox.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				comboSelectionHandler(e);
+			}
+		});
+		panelTop.add(comboBox);
+
+		JLabel lblDifficulty = new JLabel("Difficulty:");
+		lblDifficulty.setFont(new Font("Quicksand Medium", Font.PLAIN, 18));
+		lblDifficulty.setBounds(20, 211, 101, 23);
+		panelTop.add(lblDifficulty);
 
 		for (Enumeration<AbstractButton> buttons = langGroup.getElements(); buttons.hasMoreElements();) {
 			AbstractButton button = buttons.nextElement();
@@ -568,6 +584,8 @@ public class GamePanel extends JFrame {
 			}
 			timer.setDelay((int) seconds * 10);
 			lblHighScore.setText("High Score: " + highScores[difficulty.ordinal()]);
+			if (comboBox != null)
+				comboBox.setSelectedIndex(difficulty.ordinal());
 		}
 	}
 
@@ -590,16 +608,52 @@ public class GamePanel extends JFrame {
 			}
 		}
 	}
-	
+
 	public void submitButtonHandler() {
 		if (Client.sendScores(txtUsername.getText(), highScores)) {
-			
+
 		} else {
-			
+
 		}
 	}
-	
-	public ConcurrentSkipListMap<String, Integer> getScoreTable(Difficulty dif){
-		return Client.getTable(dif.name());
+
+	public void scoreTableSetup(Difficulty dif) {
+		Map<String, Integer> orderedTable = Client.getTable(dif.name()).entrySet().stream()
+				.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+		String columnNames[] = { "Username", "Score" };
+		Object[][] data = new Object[orderedTable.size()][2];
+		int i = 0;
+		for (Entry<String, Integer> entry : orderedTable.entrySet()) {
+			data[i][1] = entry.getValue();
+			data[i][0] = entry.getKey();
+			i++;
+		}
+		if (table == null) {
+			table = new JTable();
+			table.setFocusable(false);
+			table.setRowSelectionAllowed(false);
+			table.setShowVerticalLines(false);
+			table.getTableHeader().setReorderingAllowed(false);
+			table.setBounds(119, 206, 334, 247);
+		}
+		table.setModel(new DefaultTableModel(data, columnNames) {
+			private static final long serialVersionUID = 1L;
+
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		});
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+		table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+	}
+
+	public void comboSelectionHandler(ItemEvent e) {
+		if (e.getStateChange() == ItemEvent.SELECTED) {
+			String item = (String) e.getItem();
+			scoreTableSetup(Difficulty.valueOf(item.toUpperCase()));
+		}
 	}
 }

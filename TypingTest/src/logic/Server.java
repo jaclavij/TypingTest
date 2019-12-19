@@ -44,7 +44,6 @@ public class Server {
 			e.printStackTrace();
 		} finally {
 			try {
-				HighScore.save();
 				if (ss != null)
 					ss.close();
 			} catch (IOException e) {
