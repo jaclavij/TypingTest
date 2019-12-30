@@ -24,31 +24,22 @@ public class ServeRequest implements Runnable {
 				BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()))) {
 			String linea;
 			linea = br.readLine();
-			System.out.println("Recibo " + linea);
+			// Caso recibir puntuaciones
 			if (linea.startsWith("Username")) {
-				System.out.println("Got username");
 				String username = linea.substring(9);
-				System.out.println("Username: " + username);
-				if (HighScore.usernameAvailable(username)) {
-					System.out.println("Username available");
-					w.write("OK" + "\r\n");
-					w.flush();
-					ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
-					Integer[] values = (Integer[]) ois.readObject();
-					System.out.println("Read values");
-					HighScore.putScore(username, values);
-				} else {
-					System.out.println("Username unavailable");
-					w.write("Unavailable" + "\r\n");
-				}
+				w.write("OK" + "\r\n");
+				w.flush();
+				ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+				Integer[] values = (Integer[]) ois.readObject();
+				HighScore.putScore(username, values);
+
+				// Casos de recibir petiones de las tablas
 			} else if (linea.equals("EASY")) {
 				w.write("OK" + "\r\n");
 				w.flush();
 				linea = br.readLine();
-				System.out.println("Leo " + linea);
 				if (linea.equals("SEND")) {
 					ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-					System.out.println("Tabla enviada");
 					oos.writeObject(HighScore.getTableEasy());
 					oos.flush();
 					oos.close();
@@ -57,23 +48,18 @@ public class ServeRequest implements Runnable {
 				w.write("OK" + "\r\n");
 				w.flush();
 				linea = br.readLine();
-				System.out.println("Leo " + linea);
 				if (linea.equals("SEND")) {
 					ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-					System.out.println("Tabla enviada");
 					oos.writeObject(HighScore.getTableMedium());
 					oos.flush();
 					oos.close();
 				}
 			} else if (linea.equals("HARD")) {
-				System.out.println("Envío OK");
 				w.write("OK" + "\r\n");
 				w.flush();
 				linea = br.readLine();
-				System.out.println("Leo " + linea);
 				if (linea.equals("SEND")) {
 					ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-					System.out.println("Tabla enviada");
 					oos.writeObject(HighScore.getTableHard());
 					oos.flush();
 					oos.close();
@@ -82,10 +68,8 @@ public class ServeRequest implements Runnable {
 				w.write("OK" + "\r\n");
 				w.flush();
 				linea = br.readLine();
-				System.out.println("Leo " + linea);
 				if (linea.equals("SEND")) {
 					ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-					System.out.println("Tabla enviada");
 					oos.writeObject(HighScore.getTableGod());
 					oos.flush();
 					oos.close();

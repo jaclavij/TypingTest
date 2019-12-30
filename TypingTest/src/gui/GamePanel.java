@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
@@ -106,7 +107,7 @@ public class GamePanel extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GamePanel frame = new GamePanel(Difficulty.HARD, Language.ESP);
+					GamePanel frame = new GamePanel(Difficulty.GOD, Language.ENG);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -468,6 +469,7 @@ public class GamePanel extends JFrame {
 
 		pack();
 		setLocationRelativeTo(null);
+		setResizable(false);
 		addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
 				txtInput.requestFocus();
@@ -511,7 +513,6 @@ public class GamePanel extends JFrame {
 					break;
 				}
 			}
-			System.out.println(highScores[0] + " " + highScores[1] + " " + highScores[2] + " " + highScores[3]);
 		}
 	}
 
@@ -582,7 +583,7 @@ public class GamePanel extends JFrame {
 			default:
 				break;
 			}
-			timer.setDelay((int) seconds * 10);
+			timer.setDelay((int) (seconds * 10));
 			lblHighScore.setText("High Score: " + highScores[difficulty.ordinal()]);
 			if (comboBox != null)
 				comboBox.setSelectedIndex(difficulty.ordinal());
@@ -610,44 +611,44 @@ public class GamePanel extends JFrame {
 	}
 
 	public void submitButtonHandler() {
-		if (Client.sendScores(txtUsername.getText(), highScores)) {
-
-		} else {
-
-		}
+		Client.sendScores(txtUsername.getText(), highScores);
+		scoreTableSetup(difficulty);
 	}
 
 	public void scoreTableSetup(Difficulty dif) {
-		Map<String, Integer> orderedTable = Client.getTable(dif.name()).entrySet().stream()
-				.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
-		String columnNames[] = { "Username", "Score" };
-		Object[][] data = new Object[orderedTable.size()][2];
-		int i = 0;
-		for (Entry<String, Integer> entry : orderedTable.entrySet()) {
-			data[i][1] = entry.getValue();
-			data[i][0] = entry.getKey();
-			i++;
-		}
-		if (table == null) {
-			table = new JTable();
-			table.setFocusable(false);
-			table.setRowSelectionAllowed(false);
-			table.setShowVerticalLines(false);
-			table.getTableHeader().setReorderingAllowed(false);
-			table.setBounds(119, 206, 334, 247);
-		}
-		table.setModel(new DefaultTableModel(data, columnNames) {
-			private static final long serialVersionUID = 1L;
-
-			public boolean isCellEditable(int row, int column) {
-				return false;
+		ConcurrentHashMap<String, Integer> firstTable = Client.getTable(dif.name());
+		if (firstTable != null) {
+			Map<String, Integer> orderedTable = firstTable.entrySet().stream()
+					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).collect(Collectors
+							.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+			String columnNames[] = { "Username", "Score" };
+			Object[][] data = new Object[orderedTable.size()][2];
+			int i = 0;
+			for (Entry<String, Integer> entry : orderedTable.entrySet()) {
+				data[i][1] = entry.getValue();
+				data[i][0] = entry.getKey();
+				i++;
 			}
-		});
-		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-		table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+			if (table == null) {
+				table = new JTable();
+				table.setFocusable(false);
+				table.setRowSelectionAllowed(false);
+				table.setShowVerticalLines(false);
+				table.getTableHeader().setReorderingAllowed(false);
+				table.setBounds(119, 206, 334, 247);
+			}
+			table.setModel(new DefaultTableModel(data, columnNames) {
+				private static final long serialVersionUID = 1L;
+
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			});
+			DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+			centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+			table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+			table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+		}
 	}
 
 	public void comboSelectionHandler(ItemEvent e) {

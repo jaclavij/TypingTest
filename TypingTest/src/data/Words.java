@@ -13,15 +13,11 @@ import java.util.Random;
 import gui.Language;
 
 public class Words {
-	
+
 	private static List<String> engList;
 	private static List<String> espList;
 	private static Random ran = new Random();
-	
-	public static void main(String[] args) {
-		load();
-	}
-	
+
 	public static void load() {
 		File engFile = new File("wordData/1-1000.txt");
 		File espFile = new File("wordData/comunes.txt");
@@ -74,7 +70,7 @@ public class Words {
 	public void setespList(List<String> newEspList) {
 		espList = newEspList;
 	}
-	
+
 	public static String getRandom(Language lang) {
 		if (lang == Language.ESP)
 			return espList.get(ran.nextInt(espList.size()));

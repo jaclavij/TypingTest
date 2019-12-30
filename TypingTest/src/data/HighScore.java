@@ -17,19 +17,7 @@ public class HighScore {
 	private static ConcurrentHashMap<String, Integer> tableMedium = new ConcurrentHashMap<>();
 	private static ConcurrentHashMap<String, Integer> tableHard = new ConcurrentHashMap<>();
 	private static ConcurrentHashMap<String, Integer> tableGod = new ConcurrentHashMap<>();
-	private static ConcurrentHashMap<String, Integer> tableGod2 = new ConcurrentHashMap<>();
 	private static Set<String> tableUsername = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-
-	public static void putGod2(String key, Integer value) {
-		tableGod2.put(key, value);
-
-//		NavigableSet navigableTailMapKeySet = tableGod2.keySet();
-//        System.out.println("-----------------");
-//        for(Iterator tailMapIterator = navigableTailMapKeySet.iterator(); tailMapIterator.hasNext();)
-//        {
-//            System.out.println(tailMapIterator.next());
-//        }
-	}
 
 	public static void save() {
 		try {
@@ -95,46 +83,36 @@ public class HighScore {
 		}
 	}
 
-	public static void count() {
-		System.out.println("Easy: " + tableEasy.size());
-		System.out.println("Medium: " + tableMedium.size());
-		System.out.println("Hard: " + tableHard.size());
-		System.out.println("God: " + tableGod.size());
-		System.out.println("Usernames: " + tableUsername.size());
-	}
-
 	public static boolean usernameAvailable(String username) {
 		return !tableUsername.contains(username);
 	}
 
 	public static void putScore(String key, Integer[] values) {
-		System.out.println("Valores: " + values[0] + " " + values[1] + " " + values[2] + " " + values[3]);
 		tableUsername.add(key);
 		if (tableEasy.containsKey(key)) {
 			if (tableEasy.get(key) < values[0])
 				tableEasy.put(key, values[0]);
-		} else {
+		} else if (values[0] > 0) {
 			tableEasy.put(key, values[0]);
 		}
 		if (tableMedium.containsKey(key)) {
 			if (tableMedium.get(key) < values[1])
 				tableMedium.put(key, values[1]);
-		} else {
+		} else if (values[1] > 0) {
 			tableMedium.put(key, values[1]);
 		}
 		if (tableHard.containsKey(key)) {
 			if (tableHard.get(key) < values[2])
 				tableHard.put(key, values[2]);
-		} else {
+		} else if (values[2] > 0) {
 			tableHard.put(key, values[2]);
 		}
 		if (tableGod.containsKey(key)) {
 			if (tableGod.get(key) < values[3])
 				tableGod.put(key, values[3]);
-		} else {
+		} else if (values[3] > 0) {
 			tableGod.put(key, values[3]);
 		}
-		count();
 		save();
 	}
 
